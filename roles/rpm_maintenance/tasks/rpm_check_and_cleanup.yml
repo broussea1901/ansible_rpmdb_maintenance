@@ -5,6 +5,7 @@
       stat:
         path: /var/lib/rpm/.rpm.lock
       register: rpm_lock_file
+      failed_when: rpm_lock_file.stat.exists
 
     # Check for RPM __db.* files
     - name: Check for RPM __db.* files

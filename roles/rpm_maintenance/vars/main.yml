@@ -2,7 +2,3 @@
 
 # Default variables for the role (can be overridden)
 rpm_processes_patterns: 'rpm|yum|dnf|packagekitd'
-packages_to_install:
-  - httpd
-  - postgresql
-yum_history_log_path: '/var/log/yum_history.log'  # Define YUM history log path
