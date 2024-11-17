@@ -1,0 +1,21 @@
+---
+- name: Verify RPM Maintenance
+  hosts: all
+  tasks:
+    - name: Ensure Apache is installed
+      ansible.builtin.command:
+        cmd: "rpm -q httpd"
+      register: apache_installed
+    - name: Assert Apache is installed
+      ansible.builtin.debug:
+        msg: "Apache installation verified: {{ apache_installed.stdout }}"
+      failed_when: apache_installed.rc != 0
+
+    - name: Ensure PostgreSQL is installed
+      ansible.builtin.command:
+        cmd: "rpm -q postgresql"
+      register: postgresql_installed
+    - name: Assert PostgreSQL is installed
+      ansible.builtin.debug:
+        msg: "PostgreSQL installation verified: {{ postgresql_installed.stdout }}"
+      failed_when: postgresql_installed.rc != 0

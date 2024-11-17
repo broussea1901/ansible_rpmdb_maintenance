@@ -1,0 +1,5 @@
+# Encrypt it using Ansible Vault
+# ansible-vault encrypt group_vars/all/vault.yml
+
+vault_load_balancer_user: 'your_f5_username'
+vault_load_balancer_password: 'your_f5_password'

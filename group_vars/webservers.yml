@@ -1,0 +1,17 @@
+# Variables for the webservers group
+
+rpm_processes_patterns: 'rpm|yum|dnf|packagekitd'
+
+packages_to_install:
+  - httpd
+  - postgresql
+
+yum_history_log_path: '/var/log/yum_history.log'
+
+apache_service_name: 'httpd'
+
+# Load balancer configuration
+load_balancer:
+  url: 'https://f5.example.com/mgmt/tm/ltm/pool/my_pool/members'
+  user: '{{ vault_load_balancer_user }}'
+  password: '{{ vault_load_balancer_password }}'

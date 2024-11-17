@@ -1,0 +1,72 @@
+- name: Retry and check for RPM locks and processes
+  block:
+    # Check for RPM lock file
+    - name: Check for RPM lock file
+      stat:
+        path: /var/lib/rpm/.rpm.lock
+      register: rpm_lock_file
+
+    # Check for RPM __db.* files
+    - name: Check for RPM __db.* files
+      find:
+        paths: /var/lib/rpm
+        patterns: '__db.*'
+        file_type: file
+      register: rpm_db_files
+
+    # Check for RPM-related processes
+    - name: Check for RPM-related processes
+      shell: pgrep -f '{{ rpm_processes_patterns }}'
+      register: rpm_processes
+      ignore_errors: yes
+
+    # Retry until all conditions are cleared
+    - name: Retry until RPM locks and processes are resolved
+      block:
+        - name: Wait for RPM processes to finish
+          wait_for:
+            path: /
+            timeout: 30
+            delay: 5
+          when: rpm_processes.rc == 0
+
+        - name: Kill remaining RPM processes
+          shell: pkill -f '{{ rpm_processes_patterns }}'
+          register: kill_processes_result
+          failed_when: kill_processes_result.rc not in [0, 1]  # Allow process not found
+          retries: 3
+          delay: 5
+          when: rpm_processes.rc == 0
+
+        - name: Remove RPM lock file
+          file:
+            path: /var/lib/rpm/.rpm.lock
+            state: absent
+          register: remove_lock_result
+          retries: 3
+          delay: 5
+          when: rpm_lock_file.stat.exists
+
+        - name: Remove RPM __db.* files
+          file:
+            path: "{{ item.path }}"
+            state: absent
+          loop: "{{ rpm_db_files.files }}"
+          when: rpm_db_files.matched > 0
+          retries: 3
+          delay: 5
+
+      until: 
+        - not rpm_lock_file.stat.exists
+        - rpm_processes.rc != 0
+        - rpm_db_files.matched == 0
+      retries: 5
+      delay: 10
+
+  rescue:
+    - name: Fail if RPM locks or processes persist
+      fail:
+        msg: >
+          RPM locks or processes are still present after multiple retries. 
+          Manual intervention required.
+  when: rpm_lock_file.stat.exists or rpm_db_files.matched > 0

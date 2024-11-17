@@ -1,0 +1,15 @@
+- name: Remove server from load balancer
+  uri:
+    url: "{{ load_balancer.url }}/~Common~{{ ansible_fqdn }}"
+    method: DELETE
+    user: "{{ load_balancer.user }}"
+    password: "{{ load_balancer.password }}"
+    force_basic_auth: yes
+    status_code: [200, 404]
+    validate_certs: no
+  register: lb_remove_response
+  no_log: true
+
+- name: Check load balancer removal response
+  debug:
+    msg: "Load balancer removal response: {{ lb_remove_response.status }}"

@@ -1,0 +1,30 @@
+- name: Notify which server is being processed
+  debug:
+    msg: "Processing {{ inventory_hostname }}"
+
+- name: Remove server from load balancer
+  include_tasks: tasks/remove_from_load_balancer.yml
+
+- name: Perform RPM checks and clean-up
+  include_tasks: tasks/rpm_check_and_cleanup.yml
+
+- name: Retrieve and log YUM history
+  include_tasks: tasks/log_yum_history.yml
+
+- name: Stop Apache service
+  ansible.builtin.service:
+    name: "{{ apache_service_name }}"
+    state: stopped
+  notify: Restart Apache service   # restart httpd after package installation using Handler
+
+- name: Install required packages
+  ansible.builtin.package:
+    name: "{{ packages_to_install }}"
+    state: present
+
+- name: Re-add server to load balancer
+  include_tasks: tasks/add_to_load_balancer.yml
+
+- name: Confirm success on {{ inventory_hostname }}
+  debug:
+    msg: "Server {{ inventory_hostname }} processed successfully. Apache restarted and server re-added to the load balancer."

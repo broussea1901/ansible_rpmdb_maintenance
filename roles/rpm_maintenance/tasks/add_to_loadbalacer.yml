@@ -1,0 +1,21 @@
+- name: Re-add server to load balancer
+  uri:
+    url: "{{ load_balancer.url }}"
+    method: POST
+    user: "{{ load_balancer.user }}"
+    password: "{{ load_balancer.password }}"
+    force_basic_auth: yes
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ ansible_fqdn }}"
+      address: "{{ ansible_default_ipv4.address }}"
+    status_code: [200, 409]
+    validate_certs: no
+  register: lb_readd_response
+  no_log: true
+
+- name: Check load balancer re-add response
+  debug:
+    msg: "Load balancer re-add response: {{ lb_readd_response.status }}"

@@ -1,0 +1,16 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: instance
+    image: geerlingguy/docker-centos8-ansible:latest
+    privileged: true
+    pre_build_image: true
+provisioner:
+  name: ansible
+  options:
+    vvv: true
+verifier:
+  name: ansible

@@ -1,0 +1,10 @@
+- name: Retrieve the last 10 YUM transactions
+  shell: yum history | head -n 10
+  register: yum_history
+  ignore_errors: yes
+
+- name: Log YUM history to a file
+  copy:
+    content: "{{ yum_history.stdout | default('No yum history available') }}"
+    dest: "{{ yum_history_log_path }}"
+  when: yum_history.stdout is defined
